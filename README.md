@@ -28,9 +28,9 @@ docker build ./
 
 # Ad service Explanation:
 
-# Type of Application: 
+### Type of Application: 
 It is a Java-based backend application.
-# Technology Stack:
+### Technology Stack:
 Uses Java and Gradle, with additional tools like the Stackdriver Profiler Java agent for monitoring.
 
 # Docker File Explanation:
