@@ -1,4 +1,5 @@
 # productcatalogservice
+This backend service (productcatalogservice) written in Go, aimed at serving data likely related to product catalogs (products.json). It includes features for debugging (GOTRACEBACK setting) and integrates a gRPC health check capability (grpc_health_probe) for monitoring service health. The application exposes itself on port 3550 and is suitable for deployment in containerized environments.
 
 Run the following command to restore dependencies to `vendor/` directory:
 
@@ -36,3 +37,11 @@ This service has an `EXTRA_LATENCY` environment variable. This will inject a sle
 to the server.
 
 For example, use `EXTRA_LATENCY="5.5s"` to sleep for 5.5 seconds on every request.
+
+# Docker File Explain
+
+The Dockerfile sets up a Go-based backend service called productcatalogservice using a multi-stage build process. The application is built in a Golang environment and then copied to a minimal Alpine Linux image for efficient deployment. It includes necessary dependencies and a gRPC health probe for monitoring. The service is exposed on port 3550.
+
+# Jenkins File Explain
+
+This Jenkins Pipeline script automates the build and push process for a Docker image. It uses Docker registry credentials (docker-cred) and the Docker CLI (docker) tool to build an image tagged as mamir32825/productcatalogservice:latest and subsequently push it to a Docker registry. The stages ensure that the Docker image is built and tagged correctly before being deployed or used further in the CI/CD pipeline.

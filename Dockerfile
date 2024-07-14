@@ -12,37 +12,48 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Use the official Golang image based on Alpine Linux as the builder stage
 FROM golang:1.20.4-alpine@sha256:0a03b591c358a0bb02e39b93c30e955358dadd18dc507087a3b7f3912c17fe13 AS builder
+
+# Install necessary packages
 RUN apk add --no-cache ca-certificates git
 RUN apk add build-base
 
+# Set the working directory inside the container and Copy go module files and download dependencies and Copy the source code
 WORKDIR /src
-# restore dependencies
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
 
-# Skaffold passes in debug-oriented compiler flags
+# Skaffold passes in debug-oriented compiler flags and Build the Go application
 ARG SKAFFOLD_GO_GCFLAGS
 RUN go build -gcflags="${SKAFFOLD_GO_GCFLAGS}" -o /productcatalogservice .
 
+# Use a minimal Alpine Linux image for the final stage
 FROM alpine:3.18.0@sha256:02bb6f428431fbc2809c5d1b41eab5a68350194fb508869a33cb1af4444c9b11 AS without-grpc-health-probe-bin
-RUN apk add --no-cache ca-certificates
 
+# Install necessary packages and Set the working directory inside the container
+RUN apk add --no-cache ca-certificates
 WORKDIR /src
+
+# Copy the built application from the builder stage and Copy the products data file
 COPY --from=builder /productcatalogservice ./server
 COPY products.json .
 
+# Environment variable to define the Go traceback behavior
 # Definition of this variable is used by 'skaffold debug' to identify a golang binary.
 # Default behavior - a failure prints a stack trace for the current goroutine.
 # See https://golang.org/pkg/runtime/
 ENV GOTRACEBACK=single
 
+# Expose the application port and Set the entry point to the application executable
 EXPOSE 3550
 ENTRYPOINT ["/src/server"]
 
+# Create a final stage to add the gRPC health probe
 FROM without-grpc-health-probe-bin
-# renovate: datasource=github-releases depName=grpc-ecosystem/grpc-health-probe
+
+# Set the version for the gRPC health probe and Download and install the gRPC health probe
 ENV GRPC_HEALTH_PROBE_VERSION=v0.4.18
 RUN wget -qO/bin/grpc_health_probe https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/${GRPC_HEALTH_PROBE_VERSION}/grpc_health_probe-linux-amd64 && \
     chmod +x /bin/grpc_health_probe
