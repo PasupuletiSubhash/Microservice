@@ -12,21 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Base image for the build stage
 FROM eclipse-temurin:19@sha256:f3fbf1ad599d4b5dbdd7ceb55708d10cb9fafb08e094ef91e92aa63b520a232e as builder
 
+# Set up working directory and copy necessary files
 WORKDIR /app
-
 COPY ["build.gradle", "gradlew", "./"]
 COPY gradle gradle
+
+# Prepare Gradle wrapper and download dependencies
 RUN chmod +x gradlew
 RUN ./gradlew downloadRepos
 
+# Copy application source code and build distribution
 COPY . .
 RUN chmod +x gradlew
 RUN ./gradlew installDist
 
+# Second stage: smaller base image for runtime
 FROM eclipse-temurin:19.0.1_10-jre-alpine@sha256:a75ea64f676041562cd7d3a54a9764bbfb357b2bf1bebf46e2af73e62d32e36c as without-grpc-health-probe-bin
 
+# Install necessary CA certificates
 RUN apk add --no-cache ca-certificates
 
 # Download Stackdriver Profiler Java agent
@@ -35,14 +41,20 @@ RUN mkdir -p /opt/cprof && \
     | tar xzv -C /opt/cprof && \
     rm -rf profiler_java_agent.tar.gz
 
+# Set up working directory and copy built application
 WORKDIR /app
 COPY --from=builder /app .
 
+# Expose the application port
 EXPOSE 9555
+
+# Define the entry point for the application
 ENTRYPOINT ["/app/build/install/hipstershop/bin/AdService"]
 
+# Final stage for adding grpc-health-probe
 FROM without-grpc-health-probe-bin
 
+# Specify grpc_health_probe version and download
 # renovate: datasource=github-releases depName=grpc-ecosystem/grpc-health-probe
 ENV GRPC_HEALTH_PROBE_VERSION=v0.4.18
 RUN wget -qO/bin/grpc_health_probe https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/${GRPC_HEALTH_PROBE_VERSION}/grpc_health_probe-linux-amd64 && \
