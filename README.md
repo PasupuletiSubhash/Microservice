@@ -19,5 +19,5 @@ Using a minimal runtime image to run the published application, ensuring a small
 ### Add Health Probes: 
 Adding tools like gRPC health probe in a secure manner by leveraging root privileges temporarily.
 
-Jenkins File Explanation:
+# Jenkins File Explanation
 This Jenkins Pipeline script automates the build and push process for a Docker image. It uses Docker registry credentials (docker-cred) and the Docker CLI (docker) tool to build an image tagged as mamir32825/cartservice:latest and subsequently push it to a Docker registry. The stages ensure that the Docker image is built and tagged correctly before being deployed or used further in the CI/CD pipeline.
