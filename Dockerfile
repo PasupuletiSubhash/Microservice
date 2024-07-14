@@ -12,10 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Use Node.js 20.2.0-alpine as the base image
 FROM node:20.2.0-alpine@sha256:f25b0e9d3d116e267d4ff69a3a99c0f4cf6ae94eadd87f1bf7bd68ea3ff0bef7 as base
 
+# Create a builder stage based on the base image
 FROM base as builder
 
+# Install additional packages required for certain post-install scripts
 # Some packages (e.g. @google-cloud/profiler) require additional
 # deps for post-install scripts
 RUN apk add --update --no-cache \
@@ -23,27 +26,27 @@ RUN apk add --update --no-cache \
     make \
     g++ 
 
+# Set working directory for the application and Copy package.json and package-lock.json to the builder stage
 WORKDIR /usr/src/app
-
 COPY package*.json ./
 
+# Install only production dependencies
 RUN npm install --only=production
 
+# Use the base image for the final stage
 FROM base as without-grpc-health-probe-bin
 
+# Set working directory for the application and Copy node_modules from the builder stage to the final stage and Copy application code to the final stage
 WORKDIR /usr/src/app
-
 COPY --from=builder /usr/src/app/node_modules ./node_modules
-
 COPY . .
 
+# Expose port 50051 for external communication and Define the entry point to start the application and Create another stage based on without-grpc-health-probe-bin
 EXPOSE 50051
-
 ENTRYPOINT [ "node", "index.js" ]
-
 FROM without-grpc-health-probe-bin
 
-# renovate: datasource=github-releases depName=grpc-ecosystem/grpc-health-probe
+# Install grpc_health_probe tool for monitoring
 ENV GRPC_HEALTH_PROBE_VERSION=v0.4.18
 RUN wget -qO/bin/grpc_health_probe https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/${GRPC_HEALTH_PROBE_VERSION}/grpc_health_probe-linux-amd64 && \
     chmod +x /bin/grpc_health_probe
