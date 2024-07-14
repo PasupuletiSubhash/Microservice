@@ -35,16 +35,16 @@ Uses Java and Gradle, with additional tools like the Stackdriver Profiler Java a
 
 # Docker File Explanation:
 
-## Multi-stage build:
+### 1. Multi-stage build:
 The Dockerfile begins with a multi-stage build pattern. This allows different images to be used at different stages of the build process, optimizing both size and security.
 
-## First stage (builder):
+### 2. First stage (builder):
 Sets up the build environment, copies necessary files, downloads dependencies, and builds the application.
 
-## Second stage (without-grpc-health-probe-bin): 
+### 3. Second stage (without-grpc-health-probe-bin): 
 Prepares a smaller runtime environment, installs CA certificates, and downloads the Stackdriver Profiler Java agent.
 
-## Final stage:
+### 4. Final stage:
 Adds the grpc_health_probe binary for health checking.
 
 This Dockerfile is structured to first build the application with dependencies and then optimize the runtime environment, including necessary tools like the Stackdriver Profiler Java agent and grpc_health_probe for health checks.
