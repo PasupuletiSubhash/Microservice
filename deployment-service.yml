@@ -1,4 +1,5 @@
 ---
+# Deployment for emailservice
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -12,9 +13,9 @@ spec:
       labels:
         app: emailservice
     spec:
-      serviceAccountName: default
-      terminationGracePeriodSeconds: 5
-      securityContext:
+      serviceAccountName: default # Sets the service account to use for pods
+      terminationGracePeriodSeconds: 5 # Grace period for pod termination
+      securityContext: # Security context for the container
         fsGroup: 1000
         runAsGroup: 1000
         runAsNonRoot: true
@@ -28,23 +29,23 @@ spec:
               - ALL
           privileged: false
           readOnlyRootFilesystem: true
-        image: adijaiswal/emailservice:latest
+        image: mamir32825/emailservice:latest # Docker image for the container
         ports:
-        - containerPort: 8080
-        env:
+        - containerPort: 8080 # Port the container listens on
+        env: # Environment variables for the container
         - name: PORT
           value: "8080"
         - name: DISABLE_PROFILER
           value: "1"
-        readinessProbe:
+        readinessProbe: # Readiness probe configuration
           periodSeconds: 5
           exec:
             command: ["/bin/grpc_health_probe", "-addr=:8080"]
-        livenessProbe:
+        livenessProbe: # Liveness probe configuration
           periodSeconds: 5
           exec:
             command: ["/bin/grpc_health_probe", "-addr=:8080"]
-        resources:
+        resources: # Resource requests and limits for the container
           requests:
             cpu: 100m
             memory: 64Mi
@@ -52,60 +53,61 @@ spec:
             cpu: 200m
             memory: 128Mi
 ---
+# Service definition for emailservice
 apiVersion: v1
 kind: Service
 metadata:
   name: emailservice
 spec:
-  type: ClusterIP
+  type: ClusterIP # Service type (ClusterIP, NodePort, LoadBalancer)
   selector:
-    app: emailservice
+    app: emailservice # Labels to select pods for the servic
   ports:
   - name: grpc
-    port: 5000
-    targetPort: 8080
+    port: 5000 # Port exposed by the service
+    targetPort: 8080 # Port on the pods the service forwards to
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: checkoutservice
+  name: checkoutservice # Name of the deployment
 spec:
   selector:
     matchLabels:
-      app: checkoutservice
+      app: checkoutservice # Select pods with label app: checkoutservice
   template:
     metadata:
       labels:
-        app: checkoutservice
+        app: checkoutservice # Labels for pods created by this deployment
     spec:
-      serviceAccountName: default
+      serviceAccountName: default # Service account used by pods
       containers:
-        - name: server
-          image: adijaiswal/checkoutservice:latest
+        - name: server # Container name
+          image: mamir32825/checkoutservice:latest # Docker image for the container
           ports:
-          - containerPort: 5050
-          readinessProbe:
+          - containerPort: 5050 # Port the container listens on
+          readinessProbe: # Readiness probe configuration
             exec:
-              command: ["/bin/grpc_health_probe", "-addr=:5050"]
-          livenessProbe:
+              command: ["/bin/grpc_health_probe", "-addr=:5050"] # Command to check readiness
+          livenessProbe: # Liveness probe configuration
             exec:
-              command: ["/bin/grpc_health_probe", "-addr=:5050"]
-          env:
+              command: ["/bin/grpc_health_probe", "-addr=:5050"] # Command to check liveness
+          env: # Environment variables for the container
           - name: PORT
             value: "5050"
           - name: PRODUCT_CATALOG_SERVICE_ADDR
-            value: "productcatalogservice:3550"
+            value: "productcatalogservice:3550" # Address of product catalog service
           - name: SHIPPING_SERVICE_ADDR
-            value: "shippingservice:50051"
+            value: "shippingservice:50051" # Address of shipping service
           - name: PAYMENT_SERVICE_ADDR
-            value: "paymentservice:50051"
+            value: "paymentservice:50051" # Address of payment service
           - name: EMAIL_SERVICE_ADDR
-            value: "emailservice:5000"
+            value: "emailservice:5000" # Address of email service
           - name: CURRENCY_SERVICE_ADDR
-            value: "currencyservice:7000"
-          - name: CART_SERVICE_ADDR
-            value: "cartservice:7070"
-          resources:
+            value: "currencyservice:7000" # Address of currency service
+          - name: CART_SERVICE_ADDR 
+            value: "cartservice:7070" # Address of cart service
+          resources: # Resource requests and limits for the container
             requests:
               cpu: 100m
               memory: 64Mi
@@ -116,63 +118,63 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: checkoutservice
+  name: checkoutservice  # Name of the Kubernetes service
 spec:
-  type: ClusterIP
+  type: ClusterIP # Service type (ClusterIP)
   selector:
-    app: checkoutservice
+    app: checkoutservice  # Selects pods with label app: checkoutservice
   ports:
-  - name: grpc
-    port: 5050
-    targetPort: 5050
+  - name: grpc # Name of the port
+    port: 5050 # Port exposed by the service
+    targetPort: 5050 # Port on pods that the service forwards traffic to
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: recommendationservice
+  name: recommendationservice # Name of the Deployment resource
 spec:
   selector:
     matchLabels:
-      app: recommendationservice
+      app: recommendationservice # Selects pods with label app: recommendationservice
   template:
     metadata:
       labels:
-        app: recommendationservice
+        app: recommendationservice # Labels applied to pods managed by this Deployment
     spec:
-      serviceAccountName: default
-      terminationGracePeriodSeconds: 5
+      serviceAccountName: default # Service account used by pods
+      terminationGracePeriodSeconds: 5 # Grace period for pod termination
       containers:
-      - name: server
-        image: adijaiswal/recommendationservice:latest
+      - name: server # Name of the container within the pod
+        image: mamir32825/recommendationservice:latest # Docker image for the container
         ports:
-        - containerPort: 8080
+        - containerPort: 8080 # Port on which the container listens
         readinessProbe:
-          periodSeconds: 5
+          periodSeconds: 5 # Interval between readiness probes
           exec:
-            command: ["/bin/grpc_health_probe", "-addr=:8080"]
+            command: ["/bin/grpc_health_probe", "-addr=:8080"] # Command for readiness probe
         livenessProbe:
-          periodSeconds: 5
+          periodSeconds: 5 # Interval between liveness probes
           exec:
-            command: ["/bin/grpc_health_probe", "-addr=:8080"]
+            command: ["/bin/grpc_health_probe", "-addr=:8080"] # Command for liveness probe
         env:
-        - name: PORT
-          value: "8080"
-        - name: PRODUCT_CATALOG_SERVICE_ADDR
-          value: "productcatalogservice:3550"
-        - name: DISABLE_PROFILER
-          value: "1"
+        - name: PORT # Environment variable name
+          value: "8080" # Value for the PORT environment variable
+        - name: PRODUCT_CATALOG_SERVICE_ADDR # Environment variable name
+          value: "productcatalogservice:3550" # Value for the PRODUCT_CATALOG_SERVICE_ADDR environment variable
+        - name: DISABLE_PROFILER # Environment variable name
+          value: "1" # Value for the DISABLE_PROFILER environment variable
         resources:
           requests:
-            cpu: 100m
-            memory: 220Mi
+            cpu: 100m # CPU request for the container
+            memory: 220Mi # Memory request for the container
           limits:
-            cpu: 200m
-            memory: 450Mi
+            cpu: 200m # CPU limit for the container
+            memory: 450Mi # Memory limit for the container
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: recommendationservice
+  name: recommendationservice # Name of the Deployment resource
 spec:
   type: ClusterIP
   selector:
@@ -200,7 +202,7 @@ spec:
       serviceAccountName: default
       containers:
         - name: server
-          image: adijaiswal/frontend:latest
+          image: mamir32825/frontend:latest
           ports:
           - containerPort: 8080
           readinessProbe:
@@ -297,7 +299,7 @@ spec:
       terminationGracePeriodSeconds: 5
       containers:
       - name: server
-        image: adijaiswal/paymentservice:latest
+        image: mamir32825/paymentservice:latest
         ports:
         - containerPort: 50051
         env:
@@ -349,7 +351,7 @@ spec:
       terminationGracePeriodSeconds: 5
       containers:
       - name: server
-        image: adijaiswal/productcatalogservice:latest
+        image: mamir32825/productcatalogservice:latest
         ports:
         - containerPort: 3550
         env:
@@ -401,7 +403,7 @@ spec:
       terminationGracePeriodSeconds: 5
       containers:
       - name: server
-        image: adijaiswal/cartservice:latest
+        image: mamir32825/cartservice:latest
         ports:
         - containerPort: 7070
         env:
@@ -465,7 +467,7 @@ spec:
               - ALL
           privileged: false
           readOnlyRootFilesystem: true
-        image: adijaiswal/loadgenerator:latest
+        image: mamir32825/loadgenerator:latest
         env:
         - name: FRONTEND_ADDR
           value: "frontend:80"
@@ -496,7 +498,7 @@ spec:
       terminationGracePeriodSeconds: 5
       containers:
       - name: server
-        image: adijaiswal/currencyservice:latest
+        image: mamir32825/currencyservice:latest
         ports:
         - name: grpc
           containerPort: 7000
@@ -548,7 +550,7 @@ spec:
       serviceAccountName: default
       containers:
       - name: server
-        image: adijaiswal/shippingservice:latest
+        image: mamir32825/shippingservice:latest
         ports:
         - containerPort: 50051
         env:
@@ -654,7 +656,7 @@ spec:
       terminationGracePeriodSeconds: 5
       containers:
       - name: server
-        image: adijaiswal/adservice:latest
+        image: mamir32825/adservice:latest
         ports:
         - containerPort: 9555
         env:

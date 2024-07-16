@@ -1,0 +1,3 @@
+# Jenkins File Explain
+
+This Jenkins pipeline automates the deployment and verification of Kubernetes resources. It leverages Jenkins' integration with Kubernetes via the Kubernetes credentials stored in Jenkins (credentialsId: 'k8-token') to deploy configurations (deployment-service.yml) and verify the deployment status (kubectl get svc). The pipeline ensures consistent and reliable deployment processes for applications hosted on Amazon EKS (EKS-1 cluster in us-east-1 region).
