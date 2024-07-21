@@ -28,7 +28,7 @@ Manages payments during the buying process.
 Handles the final step of shipping the product once payment is complete.
 
 # Infra Architecture
-[![](.infra/ArchitectureDiagram.gif)]
+![gif](.infra/ArchitectureDiagram.gif)
 
 # Deployment-service.yml
 
