@@ -27,6 +27,9 @@ Manages payments during the buying process.
 ### Shipping Service: 
 Handles the final step of shipping the product once payment is complete.
 
+# Infra Architecture
+[![](.Architecture Diagram.gif)]
+
 # Deployment-service.yml
 
 This configuration file defines deployments and services for microservices such as emailservice, checkoutservice, recommendationservice, frontend, paymentservice, productcatalogservice, cartservice, loadgenerator, currencyservice, shippingservice, redis-cart, and adservice. Each section specifies how the pods should be deployed, configured, and connected within a Kubernetes cluster.
