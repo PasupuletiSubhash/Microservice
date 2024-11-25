@@ -1,5 +1,8 @@
 pipeline {
     agent any // Runs the pipeline on any available agent
+	environment { 
+        SCANNER_HOME=tool 'sonar-scanner' 
+    }
 
     stages {
 		stage("Sonarqube Analysis "){
