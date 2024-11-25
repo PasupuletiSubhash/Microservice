@@ -8,7 +8,7 @@ pipeline {
                     // Use Docker registry credentials and tool for Docker commands
                     withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
                         // Build the Docker image and tag it as 'latest'
-                        sh "docker build -t mamir32825/shippingservice:latest ."
+                        sh "docker build -t subbusubhash/shippingservice:latest ."
                     }
                 }
             }
@@ -20,7 +20,7 @@ pipeline {
                     // Use Docker registry credentials and tool for Docker commands
                     withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
                         // Push the Docker image to the registry
-                        sh "docker push mamir32825/shippingservice:latest "
+                        sh "docker push subbusubhash/shippingservice:latest "
                     }
                 }
             }
