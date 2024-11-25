@@ -2,6 +2,15 @@ pipeline {
     agent any // Runs the pipeline on any available agent
 
     stages {
+		stage("Sonarqube Analysis "){
+			steps{
+				withSonarQubeEnv('sonar-server') {
+				sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=microservice \
+					-Dsonar.java.binaries=. \
+					-Dsonar.projectKey=microservice '''
+				}
+			}
+		}
         stage('Deploy To Kubernetes') { 
             steps {
                 // Uses Kubernetes credentials to apply deployment configuration
