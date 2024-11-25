@@ -12,7 +12,7 @@ pipeline {
                     
                 }
             }
-        }
+        
         
         stage('verify Deployment') { // Defines the second stage for verifying the deployment
             steps {
